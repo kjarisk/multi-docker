@@ -1,0 +1,23 @@
+language: generic 
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t kjarisk/react-test -f ./client/Dockerfile.dev ./client
+  
+script:
+  - docker run -e CI=true kjarisk/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t kjarisk/multi-client ./client
+  - docker build -t kjarisk/multi-nginx ./nginx
+  - docker build -t kjarisk/multi-server ./server
+  - docker build -t kjarisk/multi-worker ./worker
+  # login to docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take images and push
+  - docker push kjarisk/multi-client
+  - docker push kjarisk/multi-nginx
+  - docker push kjarisk/multi-server
+  - docker push kjarisk/multi-worker
