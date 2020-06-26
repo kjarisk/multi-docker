@@ -14,10 +14,26 @@ after_success:
   - docker build -t kjarisk/multi-nginx ./nginx
   - docker build -t kjarisk/multi-server ./server
   - docker build -t kjarisk/multi-worker ./worker
+  
   # login to docker
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  
   # take images and push
+
   - docker push kjarisk/multi-client
   - docker push kjarisk/multi-nginx
   - docker push kjarisk/multi-server
   - docker push kjarisk/multi-worker
+
+  deploy:
+    edge: true
+    provider: elasticbeanstalk
+    region: us-west-2
+    app: multi-docker
+    env: MultiDocker-env
+    bucket_name: elasticbeanstalk-us-west-2-190343677142
+    bucket_path: docker_multi
+    on:
+      branch: master
+    access_key_id: $AWS_ACCESS_KEY
+    secret_access_key: $AWS_SECRET_KEY
